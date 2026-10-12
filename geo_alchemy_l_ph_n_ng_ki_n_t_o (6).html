@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Geo-Alchemy: Lò Phản Ứng Kiến Tạo</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'scifi': ['Orbitron', 'sans-serif'],
+                        'tech': ['Rajdhani', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif']
+                    },
+                    colors: {
+                        space: {
+                            dark: '#030712',
+                            panel: '#111827',
+                            border: '#3b82f6',
+                            neon: '#00f2fe',
+                            green: '#22c55e',
+                            red: '#ef4444',
+                            gold: '#eab308'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: theme('colors.space.dark');
+            color: white;
+            overflow: hidden;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* NỀN VŨ TRỤ */
+        .solar-bg {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 35%, #0f172a 0%, #020617 80%);
+            z-index: 0; pointer-events: none; overflow: hidden;
+        }
+        .stars {
+            position: absolute; inset: 0;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255,255,255,0.8) 1px, transparent 1px),
+                radial-gradient(circle at 80% 30%, rgba(255,255,255,0.5) 1px, transparent 1px),
+                radial-gradient(circle at 50% 90%, rgba(255,255,255,0.9) 2px, transparent 2px),
+                radial-gradient(circle at 20% 80%, rgba(255,255,255,0.6) 1px, transparent 1px),
+                radial-gradient(circle at 90% 70%, rgba(255,255,255,1) 1.5px, transparent 1.5px);
+            background-size: 150px 150px;
+            animation: twinkle 4s infinite alternate;
+        }
+        @keyframes twinkle { 0% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        /* MẶT TRỜI VÀ QUỸ ĐẠO */
+        .sun-core {
+            position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%);
+            width: 120px; height: 120px;
+            background: radial-gradient(circle, #fef08a 0%, #eab308 40%, #ea580c 80%, transparent 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 60px #eab308, 0 0 120px #ea580c, 0 0 200px #ef4444;
+            animation: sunPulse 3s infinite alternate ease-in-out;
+        }
+        @keyframes sunPulse {
+            0% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.9; }
+            100% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; box-shadow: 0 0 80px #fef08a, 0 0 150px #ea580c, 0 0 250px #ef4444; }
+        }
+        .orbit { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: 50%; }
+        .orbit-1 { width: 280px; height: 280px; animation: spinOrbit 15s linear infinite; }
+        .orbit-2 { width: 450px; height: 450px; animation: spinOrbit 25s linear infinite reverse; }
+        .orbit-3 { width: 650px; height: 650px; animation: spinOrbit 40s linear infinite; }
+        @keyframes spinOrbit { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        .planet { position: absolute; top: -5px; left: 50%; transform: translateX(-50%); border-radius: 50%; }
+        .p-1 { width: 10px; height: 10px; background: #38bdf8; box-shadow: 0 0 15px #38bdf8; }
+        .p-2 { width: 16px; height: 16px; background: #22c55e; box-shadow: 0 0 20px #22c55e; top: -8px; }
+        .p-3 { width: 22px; height: 22px; background: #a855f7; box-shadow: 0 0 25px #a855f7; top: -11px; }
+
+        /* LÒ PHẢN ỨNG */
+        .reactor-chamber {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 260px; height: 260px; display: flex; justify-content: center; align-items: center; z-index: 0; pointer-events: none;
+        }
+        .reactor-ring-outer {
+            position: absolute; width: 100%; height: 100%;
+            border: 3px solid transparent; border-top-color: #00f2fe; border-bottom-color: #00f2fe; border-radius: 50%;
+            animation: spin 5s linear infinite; box-shadow: 0 0 15px rgba(0,242,254,0.6), inset 0 0 15px rgba(0,242,254,0.6);
+        }
+        .reactor-ring-inner {
+            position: absolute; width: 75%; height: 75%; border: 2px dashed #facc15; border-radius: 50%;
+            animation: spin 3s linear infinite reverse; box-shadow: 0 0 15px rgba(250,204,21,0.5);
+        }
+        .reactor-energy {
+            position: absolute; width: 45%; height: 45%; background: radial-gradient(circle, rgba(0,242,254,0.5) 0%, transparent 70%);
+            border-radius: 50%; animation: pulseEnergy 1.5s infinite alternate;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulseEnergy { 0% { transform: scale(0.8); opacity: 0.4; } 100% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 35px rgba(0,242,254,0.8); } }
+
+        .tech-box {
+            background: rgba(15, 23, 42, 0.85); border: 1px solid theme('colors.space.neon');
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.2), inset 0 0 15px rgba(0, 242, 254, 0.1); backdrop-filter: blur(12px);
+        }
+        .reactor-slot {
+            width: 90px; height: 90px; border: 2px dashed rgba(0, 242, 254, 0.5); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.7);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; z-index: 10; cursor: pointer; box-shadow: inset 0 0 10px rgba(0, 242, 254, 0.3);
+        }
+        .reactor-slot:hover { border-color: theme('colors.space.neon'); box-shadow: 0 0 20px rgba(0, 242, 254, 0.5), inset 0 0 15px rgba(0, 242, 254, 0.4); }
+        .reactor-slot.filled { border: 3px solid theme('colors.space.neon'); box-shadow: 0 0 30px rgba(0, 242, 254, 0.7), inset 0 0 20px rgba(0, 242, 254, 0.5); background: rgba(0, 242, 254, 0.2); transform: scale(1.1); }
+
+        .item-card {
+            background: linear-gradient(135deg, rgba(31, 41, 55, 0.8), rgba(17, 24, 39, 0.9));
+            border: 1px solid #374151; border-radius: 12px; padding: 10px 5px; text-align: center; cursor: pointer;
+            transition: all 0.3s; position: relative; overflow: hidden; backdrop-filter: blur(4px);
+        }
+        .item-card:hover { border-color: theme('colors.space.neon'); background: rgba(31, 41, 55, 1); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,242,254,0.3); }
+        .item-card:active { transform: scale(0.95); }
+        .item-card.new-item { animation: pulseGold 2s infinite; border-color: theme('colors.space.gold'); }
+        @keyframes pulseGold { 0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.6); } 70% { box-shadow: 0 0 0 12px rgba(234, 179, 8, 0); } 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); } }
+        
+        .icon-wrapper { font-size: 2.2rem; margin-bottom: 8px; transition: transform 0.3s; }
+        .icon-wrapper i { filter: drop-shadow(0 0 8px currentColor) drop-shadow(0 0 2px rgba(255,255,255,0.8)); }
+        .item-card:hover .icon-wrapper { transform: scale(1.15); }
+
+        .btn-fuse { background: linear-gradient(135deg, theme('colors.space.neon') 0%, #0284c7 100%); color: #020617; transition: all 0.2s; position: relative; overflow: hidden; border: 2px solid transparent; }
+        .btn-fuse::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.8), transparent); transform: skewX(-20deg); animation: shine 3s infinite; }
+        @keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+        .btn-fuse:active:not(:disabled) { transform: scale(0.9); }
+        .btn-fuse:disabled { background: #1e293b; color: #64748b; border-color: #334155; box-shadow: none; cursor: not-allowed; transform: none; }
+        .btn-fuse:disabled::after { display: none; }
+
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-4px, 0, 0); } 20%, 80% { transform: translate3d(6px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-8px, 0, 0); } 40%, 60% { transform: translate3d(8px, 0, 0); } }
+        .flash-red { animation: flashRed 0.5s ease-out; }
+        @keyframes flashRed { 0% { box-shadow: inset 0 0 120px rgba(239, 68, 68, 0.9); background: rgba(239, 68, 68, 0.3); } 100% { box-shadow: none; background: transparent; } }
+        .flash-green { animation: flashGreen 0.8s ease-out; }
+        @keyframes flashGreen { 0% { box-shadow: inset 0 0 150px rgba(34, 197, 94, 0.9); background: rgba(34, 197, 94, 0.2); } 100% { box-shadow: none; background: transparent; } }
+
+        .heart-active { color: theme('colors.space.red'); filter: drop-shadow(0 0 8px rgba(239,68,68,0.8)); animation: heartbeat 1.5s infinite; }
+        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+        .heart-lost { color: #374151; transform: scale(0.8); transition: all 0.3s; }
+        .neon-text { text-shadow: 0 0 15px currentColor; }
+
+        /* Sunburst cho màn hình Victory */
+        .sunburst-bg {
+            position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.3;
+            background: repeating-conic-gradient(from 0deg, rgba(234, 179, 8, 0.8) 0deg 15deg, transparent 15deg 30deg);
+            animation: rotateSunburst 20s linear infinite;
+        }
+        @keyframes rotateSunburst { 100% { transform: rotate(360deg); } }
+        
+        /* Hiệu ứng Toast Gợi ý */
+        .toast-enter { animation: toastEnter 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .toast-leave { animation: toastLeave 0.5s ease-in forwards; }
+        @keyframes toastEnter { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes toastLeave { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-20px); } }
+        
+        /* Scrollbar tuỳ chỉnh cho kho */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: theme('colors.space.neon'); border-radius: 10px; }
+    </style>
+</head>
+<body class="flex flex-col relative w-full h-full min-h-screen">
+
+    <!-- NỀN HỆ MẶT TRỜI -->
+    <div class="solar-bg">
+        <div class="stars"></div>
+        <div class="sun-core"></div>
+        <div class="orbit orbit-1"><div class="planet p-1"></div></div>
+        <div class="orbit orbit-2"><div class="planet p-2"></div></div>
+        <div class="orbit orbit-3"><div class="planet p-3"></div></div>
+    </div>
+
+    <div id="screen-start" class="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md transition-opacity duration-500">
+        <div class="tech-box p-6 md:p-8 rounded-2xl max-w-lg w-full text-center relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 text-space-neon opacity-10 text-[150px] rotate-12"><i class="fa-brands fa-galactic-senate"></i></div>
+            
+            <i class="fa-solid fa-rocket text-space-neon text-6xl mb-3 animate-bounce filter drop-shadow-[0_0_15px_rgba(0,242,254,0.8)]"></i>
+            <h1 class="font-scifi text-3xl md:text-4xl text-space-neon font-bold mb-1 neon-text tracking-wider">GEO-ALCHEMY</h1>
+            <h2 class="font-tech text-gray-300 text-sm md:text-base uppercase tracking-widest mb-6">Lò Phản Ứng Kiến Tạo</h2>
+            
+            <div class="bg-black/50 rounded-xl border border-space-border/30 p-4 mb-6 relative z-10 shadow-inner">
+                <h3 class="font-tech text-space-gold font-bold uppercase tracking-widest text-sm mb-3"><i class="fa-solid fa-satellite-dish mr-2 animate-pulse"></i>Hướng dẫn quy trình</h3>
+                <div class="flex justify-between items-start gap-2">
+                    <div class="text-center flex-1">
+                        <div class="w-10 h-10 md:w-12 md:h-12 mx-auto bg-space-panel rounded-full border border-space-neon flex items-center justify-center mb-2 shadow-[0_0_10px_rgba(0,242,254,0.5)]">
+                            <i class="fa-solid fa-hand-pointer text-space-neon text-lg filter drop-shadow-[0_0_5px_currentColor]"></i>
+                        </div>
+                        <p class="font-tech text-[10px] md:text-xs text-gray-300 leading-tight">1. Chọn vật liệu thô</p>
+                    </div>
+                    <div class="flex items-center h-10 md:h-12"><i class="fa-solid fa-chevron-right text-space-neon text-sm opacity-60"></i></div>
+                    <div class="text-center flex-1">
+                        <div class="w-10 h-10 md:w-12 md:h-12 mx-auto bg-space-panel rounded-full border border-space-gold flex items-center justify-center mb-2 shadow-[0_0_10px_rgba(234,179,8,0.5)]">
+                            <i class="fa-solid fa-atom text-space-gold text-lg filter drop-shadow-[0_0_5px_currentColor]"></i>
+                        </div>
+                        <p class="font-tech text-[10px] md:text-xs text-gray-300 leading-tight">2. Đưa vào Lò phản ứng</p>
+                    </div>
+                    <div class="flex items-center h-10 md:h-12"><i class="fa-solid fa-chevron-right text-space-gold text-sm opacity-60"></i></div>
+                    <div class="text-center flex-1">
+                        <div class="w-10 h-10 md:w-12 md:h-12 mx-auto bg-space-panel rounded-full border border-space-red flex items-center justify-center mb-2 shadow-[0_0_10px_rgba(239,68,68,0.5)]">
+                            <i class="fa-solid fa-fire-flame-curved text-space-red text-lg filter drop-shadow-[0_0_5px_currentColor]"></i>
+                        </div>
+                        <p class="font-tech text-[10px] md:text-xs text-gray-300 leading-tight">3. Bấm Dung hợp</p>
+                    </div>
+                </div>
+                <div class="mt-3 text-left border-t border-gray-700 pt-2">
+                    <p class="font-body text-[11px] md:text-xs text-gray-300"><i class="fa-solid fa-triangle-exclamation text-space-red mr-1"></i> <strong>Cảnh báo:</strong> Ghép sai lò sẽ phát nổ. Nhưng đừng lo, hệ thống sẽ gợi ý công thức mới cho bạn!</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 relative z-10">
+                <input type="text" id="player-name" placeholder="Tên Kĩ sư điều hành..." class="w-full p-3 bg-black/60 border border-space-border/50 rounded-lg text-white font-tech text-lg focus:outline-none focus:border-space-neon transition" autocomplete="off">
+                <input type="text" id="player-class" placeholder="Mã trạm (Lớp)..." class="w-full p-3 bg-black/60 border border-space-border/50 rounded-lg text-white font-tech text-lg focus:outline-none focus:border-space-neon transition" autocomplete="off">
+                <button onclick="Game.init()" class="w-full py-4 mt-2 bg-space-neon text-black font-scifi font-bold text-xl rounded-lg hover:bg-white transition-all shadow-[0_0_20px_rgba(0,242,254,0.6)]">
+                    <i class="fa-solid fa-power-off mr-2"></i> KÍCH HOẠT HỆ THỐNG
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-game" class="hidden flex-col h-full w-full max-w-5xl mx-auto z-20 relative px-2 py-2">
+        
+        <!-- Header -->
+        <header class="p-3 mb-2 rounded-xl border border-space-border/40 bg-black/60 flex justify-between items-center backdrop-blur-md shrink-0">
+            <div>
+                <div class="font-scifi text-space-neon text-sm"><i class="fa-solid fa-user-astronaut mr-2"></i><span id="ui-name"></span></div>
+                <div class="font-tech text-space-gold text-xs uppercase tracking-widest mt-1">Khám phá: <span id="ui-progress" class="font-bold">0/8</span> MỤC TIÊU</div>
+            </div>
+            <div class="text-right">
+                <div class="font-tech text-gray-300 text-xs uppercase tracking-widest mb-1">Năng lượng Lõi</div>
+                <div class="flex gap-1.5 text-lg justify-end" id="ui-hp"></div>
+            </div>
+        </header>
+
+        <!-- Khung Toast (Gợi ý) -->
+        <div id="toast-container" class="absolute top-20 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-md pointer-events-none flex flex-col gap-2"></div>
+
+        <!-- Main Workspace (Responsive: Cột dọc trên Mobile, Chia ngang trên PC/Landscape) -->
+        <main class="flex flex-col md:flex-row flex-grow overflow-hidden gap-3">
+            
+            <!-- Khu vực Lò Phản Ứng (Reactor) -->
+            <div class="w-full md:w-1/2 h-[260px] md:h-full flex-shrink-0 flex flex-col items-center justify-center relative overflow-hidden bg-black/30 rounded-2xl border border-space-neon/20 shadow-inner">
+                <div class="reactor-chamber">
+                    <div class="reactor-ring-outer"></div>
+                    <div class="reactor-ring-inner"></div>
+                    <div class="reactor-energy"></div>
+                </div>
+
+                <div class="font-tech text-space-neon text-xs md:text-sm uppercase tracking-widest absolute top-4 z-10 drop-shadow-[0_0_5px_rgba(0,242,254,1)]">
+                    <i class="fa-solid fa-atom mr-2 animate-spin-slow"></i>Buồng Dung Hợp Tối Cao
+                </div>
+                
+                <div class="flex items-center gap-6 md:gap-10 mb-8 z-10 mt-4">
+                    <div id="slot-1" class="reactor-slot" onclick="Game.clearSlot(1)">
+                        <i class="fa-solid fa-plus text-space-neon text-3xl absolute z-0 opacity-30"></i>
+                        <div id="slot-1-content" class="z-10 text-center w-full hidden">
+                            <div class="icon-wrapper text-white" id="slot-1-icon"></div>
+                            <div class="font-tech text-[10px] md:text-xs text-white leading-tight px-1 font-bold" id="slot-1-name"></div>
+                        </div>
+                    </div>
+                    
+                    <i class="fa-solid fa-bolt text-space-gold text-3xl animate-pulse filter drop-shadow-[0_0_15px_rgba(234,179,8,1)]"></i>
+                    
+                    <div id="slot-2" class="reactor-slot" onclick="Game.clearSlot(2)">
+                        <i class="fa-solid fa-plus text-space-neon text-3xl absolute z-0 opacity-30"></i>
+                        <div id="slot-2-content" class="z-10 text-center w-full hidden">
+                            <div class="icon-wrapper text-white" id="slot-2-icon"></div>
+                            <div class="font-tech text-[10px] md:text-xs text-white leading-tight px-1 font-bold" id="slot-2-name"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btn-fuse" onclick="Game.fuse()" disabled class="btn-fuse z-10 font-scifi font-bold text-base md:text-xl px-10 py-3 rounded-full shadow-[0_0_20px_rgba(0,242,254,0.6)] tracking-widest uppercase flex items-center">
+                    <i class="fa-solid fa-fire-flame-curved mr-2"></i> DUNG HỢP
+                </button>
+            </div>
+
+            <!-- Khu vực Kho Nguyên Liệu (Inventory) -->
+            <div class="w-full md:w-1/2 flex-1 md:h-full bg-black/60 border border-space-border/50 p-3 md:p-4 flex flex-col rounded-2xl backdrop-blur-xl z-20 overflow-hidden shadow-[0_0_30px_rgba(0,242,254,0.1)]">
+                <div class="flex justify-between items-end mb-3 px-2 border-b border-gray-700/50 pb-2 shrink-0">
+                    <span class="font-tech text-space-neon text-sm md:text-base uppercase tracking-widest font-bold"><i class="fa-solid fa-boxes-stacked mr-2"></i>Kho Vật Chất</span>
+                    <span class="font-body text-[10px] text-gray-300 bg-gray-800/80 px-2 py-1 rounded shadow-inner">Chạm để đưa vào lò</span>
+                </div>
+                
+                <!-- Scrollable Grid Kho -->
+                <div id="inventory-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 overflow-y-auto content-start px-1 pb-4 flex-grow">
+                    <!-- Render by JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="screen-revive" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90 p-4 backdrop-blur-lg">
+        <div class="tech-box p-6 md:p-8 rounded-xl max-w-sm w-full text-center border-space-red shadow-[0_0_50px_rgba(239,68,68,0.3)] relative overflow-hidden">
+            <div class="absolute inset-0 bg-[radial-gradient(circle,rgba(239,68,68,0.1)_0%,transparent_100%)] animate-pulse"></div>
+            
+            <i class="fa-solid fa-radiation text-space-red text-6xl mb-4 animate-spin-slow filter drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]"></i>
+            <h1 class="font-scifi text-2xl text-space-red font-bold mb-2 neon-text">QUÁ TẢI HỆ THỐNG</h1>
+            <p class="font-body text-gray-200 text-sm mb-4">Mở SGK Địa lí 10 (Tr.15-16), nạp từ khóa để khôi phục.</p>
+            
+            <div class="bg-black/80 p-4 rounded border border-space-red/50 mb-5 text-left shadow-inner">
+                <p id="ui-revive-question" class="font-body text-white text-sm md:text-base leading-relaxed"></p>
+            </div>
+
+            <input type="text" id="revive-answer" placeholder="Nhập từ khóa (không dấu câu)..." class="w-full p-4 bg-black/60 border border-gray-600 rounded text-white font-tech text-lg focus:outline-none focus:border-space-red text-center mb-3 transition shadow-inner">
+            <button onclick="Game.checkRevive()" class="w-full py-4 bg-space-red text-white font-scifi font-bold text-lg rounded hover:bg-white hover:text-red-600 transition tracking-widest shadow-[0_0_20px_rgba(239,68,68,0.5)]"><i class="fa-solid fa-battery-full mr-2"></i>NẠP NĂNG LƯỢNG</button>
+            <p id="ui-revive-error" class="text-space-red font-tech text-sm mt-3 opacity-0 transition-opacity font-bold">Mã sai! Hãy đọc kĩ SGK.</p>
+        </div>
+    </div>
+
+    <!-- Victory Screen (Epic) -->
+    <div id="screen-victory" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center bg-space-dark/95 p-4 backdrop-blur-lg overflow-hidden">
+        <div class="sunburst-bg"></div>
+        <div class="tech-box p-8 rounded-2xl max-w-md w-full text-center border-space-gold shadow-[0_0_80px_rgba(234,179,8,0.5)] relative z-10 overflow-hidden bg-black/80 backdrop-blur-xl">
+            <i class="fa-solid fa-medal text-space-gold text-8xl mb-4 animate-bounce filter drop-shadow-[0_0_30px_rgba(234,179,8,1)]"></i>
+            <h1 class="font-scifi text-3xl md:text-4xl text-space-neon font-bold mb-2 neon-text tracking-widest">KIẾN TẠO HOÀN TẤT</h1>
+            <p class="font-body text-gray-200 text-sm mb-6">Trạm radar ghi nhận công lao to lớn. Bạn đã thu thập đủ 8 thành tố cốt lõi của Trái Đất.</p>
+            
+            <div class="bg-black/60 p-5 rounded-xl border border-space-gold/40 mb-8 shadow-inner relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 animate-[shine_2s_infinite]"></div>
+                <p class="font-tech text-gray-400 uppercase tracking-widest text-xs mb-1">Kĩ sư xuất sắc: <span id="ui-vic-name" class="text-white font-bold text-sm"></span></p>
+                <div id="ui-vic-score" class="font-scifi text-6xl text-space-green font-bold neon-text my-2">+0.5</div>
+                <p id="ui-vic-desc" class="font-tech text-space-neon uppercase tracking-widest text-xs mt-1 font-bold">Điểm Thưởng Hoàn Hảo</p>
+            </div>
+
+            <button onclick="location.reload()" class="w-full py-4 border-2 border-space-gold text-space-gold font-scifi font-bold text-xl rounded hover:bg-space-gold hover:text-black transition-colors shadow-[0_0_20px_rgba(234,179,8,0.4)]">
+                KẾT THÚC CA TRỰC
+            </button>
+        </div>
+    </div>
+
+    <!-- Popup Phân tích Thành công -->
+    <div id="ui-feedback" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 hidden backdrop-blur-md p-4">
+        <div class="bg-space-panel border-2 border-space-neon max-w-sm w-full rounded-2xl p-6 text-center shadow-[0_0_60px_rgba(0,242,254,0.3)]">
+            <div class="text-space-neon text-6xl mb-3 animate-bounce filter drop-shadow-[0_0_15px_rgba(0,242,254,0.8)]"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <h3 class="font-scifi text-space-green font-bold text-2xl mb-1 uppercase tracking-wider neon-text">Khám phá mới!</h3>
+            <div class="flex flex-col items-center justify-center my-6">
+                <div id="fb-icon" class="text-7xl text-white mb-3 filter drop-shadow-[0_0_15px_currentColor]"></div>
+                <div id="fb-name" class="font-tech font-bold text-3xl text-space-gold drop-shadow-[0_0_10px_rgba(234,179,8,0.8)] uppercase"></div>
+            </div>
+            <p id="fb-desc" class="font-body text-gray-200 text-[0.95rem] leading-relaxed mb-8 bg-black/70 p-4 rounded-xl border border-space-neon/30 text-left shadow-inner"></p>
+            <button onclick="Game.closeFeedback()" class="w-full bg-space-neon text-black font-tech font-bold py-4 text-xl rounded-xl uppercase tracking-widest hover:bg-white transition shadow-[0_0_20px_rgba(0,242,254,0.5)]">Thu nhận</button>
+        </div>
+    </div>
+
+    <script>
+        // MỞ RỘNG TỪ 9 LÊN 11 VẬT LIỆU CƠ BẢN, TỪ 6 LÊN 8 MỤC TIÊU (TỔNG 19 YẾU TỐ)
+        const ELEMENTS = {
+            'bui_khi': { name: 'Bụi & Khí', icon: 'fa-cloud', color: 'text-gray-400', isBase: true },
+            'luc_hap_dan': { name: 'Lực hấp dẫn', icon: 'fa-arrows-down-to-center', color: 'text-purple-400', isBase: true },
+            'silicat': { name: 'Silicat nóng chảy', icon: 'fa-temperature-hot', color: 'text-orange-500', isBase: true },
+            'nguoi_lanh': { name: 'Sự Nguội lạnh', icon: 'fa-snowflake', color: 'text-blue-300', isBase: true },
+            'vat_lieu_vun': { name: 'Vật liệu vụn', icon: 'fa-braille', color: 'text-yellow-600', isBase: true },
+            'nen_chat': { name: 'Lắng tụ & Nén chặt', icon: 'fa-compress', color: 'text-blue-600', isBase: true },
+            'nhiet_ap_suat': { name: 'Nhiệt & Áp suất', icon: 'fa-fire-flame-curved', color: 'text-red-500', isBase: true },
+            'da_granit': { name: 'Đá Granit (Nhẹ)', icon: 'fa-cubes-stacked', color: 'text-gray-300', isBase: true },
+            'da_badan': { name: 'Đá Badan (Nặng)', icon: 'fa-cube', color: 'text-gray-600', isBase: true },
+            'thuc_vat': { name: 'Thực vật cổ đại', icon: 'fa-leaf', color: 'text-green-500', isBase: true },
+            'xac_sinh_vat': { name: 'Xác sinh vật biển', icon: 'fa-fish-fins', color: 'text-teal-400', isBase: true },
+            
+            // Các yếu tố chế tạo được (Targets)
+            'trai_dat': { name: 'Trái Đất Sơ Khai', icon: 'fa-earth-americas', color: 'text-space-neon', isTarget: true },
+            'da_macma': { name: 'Đá Macma', icon: 'fa-volcano', color: 'text-orange-400', isTarget: true },
+            'da_tramtich': { name: 'Đá Trầm Tích', icon: 'fa-layer-group', color: 'text-yellow-400', isTarget: true },
+            'da_bienchat': { name: 'Đá Biến Chất', icon: 'fa-gem', color: 'text-fuchsia-400', isTarget: true },
+            'vo_luc_dia': { name: 'Vỏ Lục Địa', icon: 'fa-mountain', color: 'text-amber-500', isTarget: true },
+            'vo_dai_duong': { name: 'Vỏ Đại Dương', icon: 'fa-water', color: 'text-blue-500', isTarget: true },
+            'than_da': { name: 'Than Đá', icon: 'fa-cubes', color: 'text-gray-500', isTarget: true },
+            'da_voi': { name: 'Đá Vôi', icon: 'fa-mountain-city', color: 'text-gray-300', isTarget: true }
+        };
+
+        const RECIPES = [
+            { in1: 'bui_khi', in2: 'luc_hap_dan', out: 'trai_dat', desc: 'Lực hấp dẫn làm đám mây bụi và khí ngưng tụ tạo thành các hành tinh, trong đó có Trái Đất.' },
+            { in1: 'silicat', in2: 'nguoi_lanh', out: 'da_macma', desc: 'Đá macma được tạo thành do quá trình ngưng kết (nguội lạnh) của các silicat nóng chảy (macma) từ dưới sâu phun lên.' },
+            { in1: 'vat_lieu_vun', in2: 'nen_chat', out: 'da_tramtich', desc: 'Đá trầm tích hình thành do sự lắng tụ và nén chặt các vật liệu vụn nhỏ (cát, sỏi, đất) tại các vùng trũng.' },
+            { in1: 'da_macma', in2: 'nhiet_ap_suat', out: 'da_bienchat', desc: 'Đá biến chất hình thành từ đá macma bị biến đổi tính chất sâu sắc do tác động của nhiệt độ và áp suất lớn.' },
+            { in1: 'da_tramtich', in2: 'nhiet_ap_suat', out: 'da_bienchat', desc: 'Đá biến chất hình thành từ đá trầm tích bị biến đổi tính chất sâu sắc do tác động của nhiệt độ và áp suất lớn.' },
+            { in1: 'da_granit', in2: 'trai_dat', out: 'vo_luc_dia', desc: 'Vỏ lục địa là phần vỏ dày tới 70km của Trái Đất, cấu tạo chủ yếu bằng các loại đá nhẹ như đá granit.' },
+            { in1: 'da_badan', in2: 'trai_dat', out: 'vo_dai_duong', desc: 'Vỏ đại dương là phần vỏ mỏng (5km) dưới đáy biển, cấu tạo chủ yếu bằng đá badan đặc và nặng.' },
+            { in1: 'thuc_vat', in2: 'nen_chat', out: 'than_da', desc: 'Than đá là đá trầm tích hữu cơ, hình thành từ xác thực vật cổ đại bị vùi lấp và nén chặt dưới sức ép của vỏ Trái Đất hàng triệu năm.' },
+            { in1: 'xac_sinh_vat', in2: 'nen_chat', out: 'da_voi', desc: 'Đá vôi hình thành chủ yếu từ vỏ và xác của các sinh vật biển (san hô, ốc) lắng đọng và nén chặt dưới đáy đại dương.' }
+        ];
+
+        const REVIVE_QUESTIONS = [
+            { q: "Điền từ: Lớp vỏ Trái Đất là lớp vật chất cứng ngoài cùng, được cấu tạo chủ yếu bởi khoáng vật và ...", a: ["đá", "da"] },
+            { q: "Ranh giới tiếp xúc trực tiếp giữa phần đáy vỏ Trái Đất và lớp manti bên dưới được gọi là mặt gì?", a: ["mo-ho", "moho", "mô-hô", "mô hô"] },
+            { q: "Vỏ lục địa được cấu tạo chủ yếu bằng đá granit, trong khi vỏ đại dương cấu tạo chủ yếu bằng đá gì?", a: ["badan", "ba dan"] }
+        ];
+
+        // Âm thanh giả lập Web Audio API
+        const AudioSys = {
+            ctx: null,
+            init: function() {
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            },
+            play: function(type) {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                osc.connect(gain); gain.connect(this.ctx.destination); const now = this.ctx.currentTime;
+                if (type === 'start') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(50, now); osc.frequency.exponentialRampToValueAtTime(400, now+0.6); gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.6); osc.start(now); osc.stop(now+0.6); }
+                else if (type === 'select') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, now); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.1); osc.start(now); osc.stop(now+0.1); }
+                else if (type === 'correct') { osc.type = 'square'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(659, now+0.1); osc.frequency.setValueAtTime(880, now+0.2); gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now+0.4); osc.start(now); osc.stop(now+0.4); }
+                else if (type === 'wrong') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, now); osc.frequency.setValueAtTime(80, now+0.2); gain.gain.setValueAtTime(0.4, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.4); osc.start(now); osc.stop(now+0.4); }
+                else if (type === 'hint') { osc.type = 'sine'; osc.frequency.setValueAtTime(1046, now); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.3); osc.start(now); osc.stop(now+0.3); }
+            }
+        };
+
+        const TOTAL_TARGETS = 8;
+
+        const Game = {
+            hp: 3,
+            inventory: [],
+            slots: [null, null],
+            targetsFound: 0,
+            hintsUsed: 0,
+            currentReviveTarget: [],
+
+            init: function() {
+                const name = document.getElementById('player-name').value.trim();
+                const cls = document.getElementById('player-class').value.trim();
+                if (!name || !cls) { alert("Thiếu tín hiệu định danh!"); return; }
+                
+                AudioSys.init(); AudioSys.play('start');
+                document.getElementById('ui-name').innerText = `${name} (${cls})`;
+                document.getElementById('ui-vic-name').innerText = name;
+
+                document.getElementById('screen-start').classList.add('hidden');
+                document.getElementById('screen-game').classList.remove('hidden');
+                document.getElementById('screen-game').classList.add('flex');
+
+                this.renderHP();
+                this.inventory = Object.keys(ELEMENTS).filter(key => ELEMENTS[key].isBase);
+                this.renderInventory();
+            },
+
+            renderHP: function() {
+                const container = document.getElementById('ui-hp');
+                container.innerHTML = '';
+                for(let i=1; i<=3; i++) {
+                    const icon = document.createElement('i');
+                    icon.className = `fa-solid fa-heart ${i <= this.hp ? 'heart-active' : 'heart-lost'}`;
+                    container.appendChild(icon);
+                }
+            },
+
+            renderInventory: function(newItemId = null) {
+                const grid = document.getElementById('inventory-grid');
+                grid.innerHTML = '';
+                
+                this.inventory.forEach(id => {
+                    const el = ELEMENTS[id];
+                    const isSelected = this.slots.includes(id);
+                    
+                    const div = document.createElement('div');
+                    // Tăng độ cao linh hoạt cho các màn hình khác nhau
+                    div.className = `item-card flex flex-col items-center justify-center min-h-[90px] md:min-h-[100px] ${isSelected ? 'hidden' : ''} ${id === newItemId ? 'new-item' : ''}`;
+                    div.onclick = () => this.selectItem(id);
+                    
+                    div.innerHTML = `
+                        <div class="icon-wrapper ${el.color}"><i class="fa-solid ${el.icon}"></i></div>
+                        <div class="font-tech text-[10px] md:text-xs text-white leading-tight px-1 font-semibold">${el.name}</div>
+                    `;
+                    grid.appendChild(div);
+                });
+            },
+
+            selectItem: function(id) {
+                if (this.slots[0] === id || this.slots[1] === id) return;
+                AudioSys.play('select');
+                if (this.slots[0] === null) this.slots[0] = id;
+                else if (this.slots[1] === null) this.slots[1] = id;
+                else this.slots[1] = id;
+                
+                this.updateSlots();
+                this.renderInventory();
+            },
+
+            clearSlot: function(slotIndex) {
+                if (this.slots[slotIndex-1] !== null) {
+                    AudioSys.play('select');
+                    this.slots[slotIndex-1] = null;
+                    this.updateSlots();
+                    this.renderInventory();
+                }
+            },
+
+            updateSlots: function() {
+                for (let i=1; i<=2; i++) {
+                    const slotDiv = document.getElementById(`slot-${i}`);
+                    const contentDiv = document.getElementById(`slot-${i}-content`);
+                    const id = this.slots[i-1];
+                    
+                    if (id) {
+                        const el = ELEMENTS[id];
+                        slotDiv.classList.add('filled');
+                        contentDiv.classList.remove('hidden');
+                        document.getElementById(`slot-${i}-icon`).innerHTML = `<i class="fa-solid ${el.icon} ${el.color}"></i>`;
+                        document.getElementById(`slot-${i}-name`).innerText = el.name;
+                    } else {
+                        slotDiv.classList.remove('filled');
+                        contentDiv.classList.add('hidden');
+                    }
+                }
+                document.getElementById('btn-fuse').disabled = !(this.slots[0] && this.slots[1]);
+            },
+
+            fuse: function() {
+                if (!this.slots[0] || !this.slots[1]) return;
+                
+                const s1 = this.slots[0]; const s2 = this.slots[1];
+                const gameScreen = document.getElementById('screen-game');
+
+                const recipe = RECIPES.find(r => (r.in1 === s1 && r.in2 === s2) || (r.in1 === s2 && r.in2 === s1));
+
+                if (recipe) {
+                    // THÀNH CÔNG
+                    AudioSys.play('correct');
+                    gameScreen.classList.add('flash-green');
+                    setTimeout(() => gameScreen.classList.remove('flash-green'), 800);
+
+                    const outId = recipe.out;
+                    let isNew = false;
+                    
+                    if (!this.inventory.includes(outId)) {
+                        this.inventory.push(outId);
+                        this.targetsFound++;
+                        document.getElementById('ui-progress').innerText = `${this.targetsFound}/${TOTAL_TARGETS}`;
+                        isNew = true;
+                    }
+
+                    const elOut = ELEMENTS[outId];
+                    document.getElementById('fb-icon').innerHTML = `<i class="fa-solid ${elOut.icon} ${elOut.color}"></i>`;
+                    document.getElementById('fb-name').innerText = elOut.name;
+                    document.getElementById('fb-desc').innerText = recipe.desc;
+                    document.getElementById('ui-feedback').classList.remove('hidden');
+
+                    this.slots = [null, null];
+                    this.updateSlots();
+                    this.renderInventory(isNew ? outId : null);
+
+                } else {
+                    // THẤT BẠI - HỆ THỐNG GỢI Ý
+                    AudioSys.play('wrong');
+                    this.hp--;
+                    this.renderHP();
+                    
+                    gameScreen.classList.add('shake', 'flash-red');
+                    setTimeout(() => {
+                        gameScreen.classList.remove('shake', 'flash-red');
+                        this.generateHint();
+                        if (this.hp <= 0) this.triggerRevive();
+                    }, 500);
+                    
+                    this.slots = [null, null];
+                    this.updateSlots();
+                    this.renderInventory();
+                }
+            },
+
+            // Tự động tìm công thức chưa làm để gợi ý
+            generateHint: function() {
+                this.hintsUsed++;
+                const undiscovered = RECIPES.filter(r => !this.inventory.includes(r.out));
+                if (undiscovered.length > 0) {
+                    const hintR = undiscovered[Math.floor(Math.random() * undiscovered.length)];
+                    const e1 = ELEMENTS[hintR.in1].name; const e2 = ELEMENTS[hintR.in2].name;
+                    this.showToast(`💡 Gợi ý hệ thống: Hãy thử kết hợp [${e1}] với [${e2}] xem sao?`);
+                } else {
+                    this.showToast("💡 Gợi ý hệ thống: Lò phản ứng báo lỗi tương thích!");
+                }
+            },
+
+            showToast: function(msg) {
+                AudioSys.play('hint');
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = 'bg-black/90 border border-space-gold text-white p-3 rounded-xl shadow-[0_0_15px_rgba(234,179,8,0.4)] toast-enter flex items-start gap-3 backdrop-blur-sm';
+                toast.innerHTML = `<i class="fa-solid fa-lightbulb text-space-gold text-xl mt-0.5 animate-pulse"></i><p class="font-body text-sm leading-snug">${msg}</p>`;
+                container.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.classList.replace('toast-enter', 'toast-leave');
+                    setTimeout(() => toast.remove(), 500);
+                }, 4000);
+            },
+
+            closeFeedback: function() {
+                document.getElementById('ui-feedback').classList.add('hidden');
+                if (this.targetsFound >= TOTAL_TARGETS) {
+                    this.showVictory();
+                }
+            },
+
+            triggerRevive: function() {
+                const qObj = REVIVE_QUESTIONS[Math.floor(Math.random() * REVIVE_QUESTIONS.length)];
+                this.currentReviveTarget = qObj.a;
+                document.getElementById('ui-revive-question').innerText = qObj.q;
+                document.getElementById('revive-answer').value = '';
+                document.getElementById('ui-revive-error').classList.add('opacity-0');
+                document.getElementById('screen-revive').classList.remove('hidden');
+            },
+
+            checkRevive: function() {
+                const ans = document.getElementById('revive-answer').value.toLowerCase().trim();
+                const errorText = document.getElementById('ui-revive-error');
+
+                if (ans === 'mokhoagv') {
+                    this.hp = 3; this.renderHP();
+                    document.getElementById('screen-revive').classList.add('hidden');
+                    alert("Cấp quyền quản trị thành công!"); return;
+                }
+
+                if (this.currentReviveTarget.includes(ans)) {
+                    AudioSys.play('correct');
+                    this.hp = 1; this.renderHP();
+                    document.getElementById('screen-revive').classList.add('hidden');
+                    errorText.classList.add('opacity-0');
+                } else {
+                    AudioSys.play('wrong');
+                    errorText.classList.remove('opacity-0');
+                    document.getElementById('screen-revive').classList.add('shake');
+                    setTimeout(() => document.getElementById('screen-revive').classList.remove('shake'), 400);
+                }
+            },
+
+            showVictory: function() {
+                document.getElementById('screen-game').classList.remove('flex');
+                document.getElementById('screen-game').classList.add('hidden');
+                document.getElementById('screen-victory').classList.remove('hidden');
+                document.getElementById('screen-victory').classList.add('flex');
+                AudioSys.play('correct');
+                setTimeout(() => AudioSys.play('correct'), 400);
+
+                // Chấm điểm động dựa vào việc có xài Gợi ý (Ghép sai) hay không
+                const scoreEl = document.getElementById('ui-vic-score');
+                const descEl = document.getElementById('ui-vic-desc');
+
+                if (this.hintsUsed === 0) {
+                    scoreEl.innerText = "+0.5";
+                    scoreEl.className = "font-scifi text-6xl text-space-neon font-bold neon-text my-2";
+                    descEl.innerText = "KĨ NĂNG HOÀN HẢO (Không dùng gợi ý)";
+                } else {
+                    scoreEl.innerText = "+0.25";
+                    scoreEl.className = "font-scifi text-6xl text-space-green font-bold neon-text my-2";
+                    descEl.innerText = `HOÀN THÀNH NHIỆM VỤ (Đã phân tích sai ${this.hintsUsed} lần)`;
+                }
+            }
+        };
+    </script>
+</body>
+</html>
